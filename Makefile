@@ -166,6 +166,13 @@ debug: build
 	  -ex 'continue' \
 	  -ex 'disp /16i $$pc'
 
+
+debug1: build
+	@tmux new-session -d "$(call run_qemu_debug) &"  && \
+	tmux split-window -h "$(GDB) -ex 'file $(OUT_ELF)' -ex 'set arch riscv:rv64' -ex 'target remote localhost:1234'" && \
+  tmux -2 attach-session -d
+
+
 clippy:
 ifeq ($(origin ARCH), command line)
 	$(call cargo_clippy,--target $(TARGET))
