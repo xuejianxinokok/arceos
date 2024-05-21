@@ -22,7 +22,7 @@ RUN apt-get update && \
         zlib1g-dev libexpat-dev  \
         ninja-build pkg-config libglib2.0-dev libpixman-1-dev libsdl2-dev \
         libslirp-dev libclang-dev \
-        python3-distutils gdb-multiarch
+        python3-distutils gdb-multiarch tmux
 
 
 # 1. Set up QEMU RISC-V
@@ -60,8 +60,8 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 RUN ./configure --target-list=aarch64-softmmu,aarch64-linux-user,riscv64-softmmu,riscv64-linux-user,x86_64-softmmu,x86_64-linux-user --enable-slirp && \
     make -j$(nproc) && \
     make install && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+#    apt-get clean && \
+#    rm -rf /var/lib/apt/lists/*
 
 # 1.4. Clean up
 WORKDIR ${HOME}
