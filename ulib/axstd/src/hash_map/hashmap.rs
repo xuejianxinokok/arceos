@@ -1,6 +1,7 @@
 use  super::hash;
-#[cfg(feature = "alloc")]
-use alloc::{string::String, vec::Vec};
+
+extern crate alloc;
+use alloc::vec::Vec;
 pub struct HashMap<K, V> {
     buckets: Vec<Vec<(K, V)>>,
     hasher: hash::DefaultHasher,
