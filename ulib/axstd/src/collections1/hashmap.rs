@@ -38,14 +38,14 @@ impl<K: AsRef<[u8]>+ core::cmp::PartialEq, V> HashMap<K, V> {
             .map(|(k, v)| (k, v))
     }
 
-    // pub fn get(&self, key: &K) -> Option<&V> {
-    //     let index = self.hasher.hash(key.as_ref()) as usize % self.capacity;
-    //     let bucket = &self.buckets[index];
-    //     for &(ref k, ref v) in bucket.iter() {
-    //         if k == key {
-    //             return Some(v);
-    //         }
-    //     }
-    //     None
-    // }
+    pub fn get(&self, key: &K) -> Option<&V> {
+        let index = self.hasher.hash(key.as_ref()) as usize % self.capacity;
+        let bucket = &self.buckets[index];
+        for &(ref k, ref v) in bucket.iter() {
+            if k == key {
+                return Some(v);
+            }
+        }
+        None
+    }
 }
