@@ -136,9 +136,12 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
             r.flags
         );
     }
-
+    
     #[cfg(feature = "alloc")]
     init_allocator();
+
+    /// 实现dtb 信息
+    // show_dtb_info(dtb.into());
 
     #[cfg(feature = "paging")]
     {
@@ -292,4 +295,45 @@ fn init_tls() {
     let main_tls = axhal::tls::TlsArea::alloc();
     unsafe { axhal::arch::write_thread_pointer(main_tls.tls_ptr() as usize) };
     core::mem::forget(main_tls);
+}
+
+extern crate alloc;
+// use core::str;
+// use alloc::string::String;
+use alloc::vec::Vec;
+// use axdtb::util::SliceRead;
+// 设备树信息
+struct DtbInfo {
+    memory_addr: usize,
+    memory_size: usize,
+    mmio_regions: Vec<(usize, usize)>,
+}
+
+/// 显示dtb 信息
+fn show_dtb_info(dtb_pa: usize){
+    // Parse fdt for early memory info
+    let dtb_info = match parse_dtb(dtb_pa) {
+        Ok(info) => info,
+        Err(err) => panic!("Bad dtb {:?}", err),
+    };
+
+    info!("DTB info: ==================================");
+    info!("Memory: {:#x}, size: {:#x}", dtb_info.memory_addr, dtb_info.memory_size);
+    info!("Virtio_mmio[{}]:", dtb_info.mmio_regions.len());
+    for r in dtb_info.mmio_regions {
+        info!("\t{:#x}, size: {:#x}", r.0, r.1);
+    }
+    info!("============================================");
+}
+
+/// 解析设备树
+fn parse_dtb(dtb_pa: usize) -> Result<DtbInfo,&'static str> {
+    // extern crate fdt;
+    // use fdt::{node::FdtNode, standard_nodes::Compatible, Fdt};
+    // 这里就是对axdtb组件的调用，传入dtb指针，解析后输出结果。这个函数和axdtb留给大家实现
+    info!("device tree @ {:#x}", dtb_pa);
+    //axdriver::
+    // let fdt = unsafe { Fdt::from_ptr(dtb as *const u8).unwrap() };
+    // walk_dt(fdt);
+    Err("parse_dtb not ready")
 }

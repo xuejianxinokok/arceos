@@ -72,6 +72,9 @@ pub mod sync;
 pub mod thread;
 pub mod time;
 
+pub mod  collections1;
+
+
 #[cfg(feature = "fs")]
 pub mod fs;
 #[cfg(feature = "net")]
