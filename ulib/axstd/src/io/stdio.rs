@@ -1,4 +1,3 @@
-
 use crate::io::{self, prelude::*, BufReader};
 use crate::sync::{Mutex, MutexGuard};
 
@@ -26,15 +25,7 @@ impl Read for StdinRaw {
 
 impl Write for StdoutRaw {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        //https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter1/7exercise.html
-        //echo -e "\x1b[31mhello world\x1b[0m"
-        let prefix="\x1b[31m".as_bytes();
-        let subfix="\x1b[0m".as_bytes();
-
-        arceos_api::stdio::ax_console_write_bytes(prefix);
-        let r= arceos_api::stdio::ax_console_write_bytes(buf);
-        arceos_api::stdio::ax_console_write_bytes(subfix);
-        r
+        arceos_api::stdio::ax_console_write_bytes(buf)
     }
     fn flush(&mut self) -> io::Result<()> {
         Ok(())
