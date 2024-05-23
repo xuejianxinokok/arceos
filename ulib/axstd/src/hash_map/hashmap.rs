@@ -2,6 +2,8 @@ use  super::hash;
 
 extern crate alloc;
 use alloc::vec::Vec;
+
+///题目要求  https://oslearning365.github.io/oscamp_unikernel/ch1-2.html
 pub struct HashMap<K, V> {
     buckets: Vec<Vec<(K, V)>>,
     hasher: hash::DefaultHasher,

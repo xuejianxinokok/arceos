@@ -1,7 +1,7 @@
 use crate::{AllocError, AllocResult, BaseAllocator, PageAllocator,ByteAllocator};
 use core::alloc::Layout;
 use core::ptr::NonNull;
-
+/// 题目要求 https://oslearning365.github.io/oscamp_unikernel/ch1-3.html
 pub struct EarlyAllocator<const PAGE_SIZE: usize> {
     start: usize,
     byte_pos: usize,
