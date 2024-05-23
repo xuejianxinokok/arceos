@@ -41,7 +41,7 @@ impl<const PAGE_SIZE: usize> BaseAllocator for EarlyAllocator<PAGE_SIZE> {
         self.size=end-start;
     }
 
-    fn add_memory(&mut self, start: usize,size: usize) -> AllocResult {
+    fn add_memory(&mut self, _start: usize,_size: usize) -> AllocResult {
         Err(AllocError::NoMemory) // unsupported
         //self.init(start, size);
         //Ok(())
@@ -72,7 +72,7 @@ impl<const PAGE_SIZE: usize> PageAllocator for EarlyAllocator<PAGE_SIZE> {
     }
 
     fn dealloc_pages(&mut self, pos: usize, num_pages: usize) {
-        //为了简单,只有与最后位置相同的位置才释放
+        //为了简单,只有与最后位置相同的位置才释放,先不管中间空隙
         if pos==self.page_pos{
           self.used_pages -= num_pages;
           self.page_pos+=num_pages*PAGE_SIZE;
@@ -106,6 +106,7 @@ impl<const PAGE_SIZE: usize> ByteAllocator for  EarlyAllocator<PAGE_SIZE> {
  
     fn dealloc(&mut self, pos: NonNull<u8>, layout: Layout) {
         let dealloc_pos= pos.as_ptr() as usize;
+        //为了简单,只有与最后位置相同的位置才释放,先不管中间空隙
         if self.byte_pos>self.start && dealloc_pos==self.byte_pos{
             self.byte_pos-=layout.size();
         }
