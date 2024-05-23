@@ -68,7 +68,7 @@ impl<const PAGE_SIZE: usize> PageAllocator for BitmapPageAllocator<PAGE_SIZE> {
             core::cmp::Ordering::Greater => self
                 .inner
                 .alloc_contiguous(num_pages, align_log2)
-                .map(|idx| idx * PAGE_SIZE + self.base),
+                .map(|idx: usize| idx * PAGE_SIZE + self.base),
             _ => return Err(AllocError::InvalidParam),
         }
         .ok_or(AllocError::NoMemory)
