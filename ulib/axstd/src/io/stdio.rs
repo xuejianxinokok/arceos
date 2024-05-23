@@ -25,7 +25,8 @@ impl Read for StdinRaw {
 
 impl Write for StdoutRaw {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        //https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter1/7exercise.html
+        // 题目要求https://oslearning365.github.io/oscamp_unikernel/ch1-1.html
+        // 参考文档 https://rcore-os.cn/rCore-Tutorial-Book-v3/chapter1/7exercise.html
         //echo -e "\x1b[31mhello world\x1b[0m"
         let prefix="\x1b[31m".as_bytes();
         let subfix="\x1b[0m".as_bytes();
