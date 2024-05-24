@@ -60,10 +60,11 @@ impl<const PAGE_SIZE: usize> PageAllocator for EarlyAllocator<PAGE_SIZE> {
         if !align_pow2.is_power_of_two() {
             return Err(AllocError::InvalidParam);
         }
-
-        if self.page_pos>self.byte_pos{
+        let old_pos=self.page_pos;
+        let new_pos=old_pos-num_pages*PAGE_SIZE;
+        if new_pos>self.byte_pos{
            self.used_pages += num_pages;
-           self.page_pos-=num_pages*PAGE_SIZE;
+           self.page_pos=new_pos;
            Ok(self.page_pos)
         }else {
            Err(AllocError::NoMemory)
@@ -72,10 +73,12 @@ impl<const PAGE_SIZE: usize> PageAllocator for EarlyAllocator<PAGE_SIZE> {
     }
 
     fn dealloc_pages(&mut self, pos: usize, num_pages: usize) {
+        let old_pos=self.page_pos;
+        let new_pos=self.page_pos+num_pages*PAGE_SIZE;
         //为了简单,只有与最后位置相同的位置才释放,先不管中间空隙
-        if pos==self.page_pos{
-          self.used_pages -= num_pages;
-          self.page_pos+=num_pages*PAGE_SIZE;
+        if pos==old_pos &&  new_pos<=self.end{
+           self.used_pages -= num_pages;
+           self.page_pos=new_pos;
         }
     }
 
@@ -95,9 +98,10 @@ impl<const PAGE_SIZE: usize> PageAllocator for EarlyAllocator<PAGE_SIZE> {
 /// 字节分配器
 impl<const PAGE_SIZE: usize> ByteAllocator for  EarlyAllocator<PAGE_SIZE> {
     fn alloc(&mut self, layout: Layout) -> AllocResult<NonNull<u8>> {
-        if self.byte_pos<self.page_pos {
-            let old_pos=self.byte_pos;
-            self.byte_pos+=layout.size();
+        let old_pos=self.byte_pos;
+        let new_pos=old_pos+layout.size();
+        if new_pos<self.page_pos {
+            self.byte_pos=new_pos;
             unsafe { Ok( NonNull::new_unchecked(old_pos as *mut u8) )}
         }else {
             Err(AllocError::NoMemory)
@@ -106,9 +110,11 @@ impl<const PAGE_SIZE: usize> ByteAllocator for  EarlyAllocator<PAGE_SIZE> {
  
     fn dealloc(&mut self, pos: NonNull<u8>, layout: Layout) {
         let dealloc_pos= pos.as_ptr() as usize;
+        let old_pos=self.byte_pos;
+        let new_pos=old_pos-layout.size();
         //为了简单,只有与最后位置相同的位置才释放,先不管中间空隙
-        if self.byte_pos>self.start && dealloc_pos==self.byte_pos{
-            self.byte_pos-=layout.size();
+        if new_pos>=self.start && dealloc_pos==self.byte_pos{
+            self.byte_pos=new_pos;
         }
     }
 
