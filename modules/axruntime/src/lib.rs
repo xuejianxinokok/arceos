@@ -309,7 +309,7 @@ extern crate alloc;
 // use alloc::string::String;
 use alloc::vec::Vec;
 // use axdtb::util::SliceRead;
-use fdt::{node::FdtNode, standard_nodes::Compatible, Fdt};
+use fdt::{node::FdtNode, Fdt};
 // 设备树信息
 struct DtbInfo {
     memory_addr: usize,
