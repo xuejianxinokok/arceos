@@ -21,9 +21,10 @@ cfg_if::cfg_if! {
         pub(crate) type AxTask = scheduler::CFSTask<TaskInner>;
         pub(crate) type Scheduler = scheduler::CFScheduler<TaskInner>;
     } else {
+        const MAX_TIME_SLICE: usize = 5;
         // If no scheduler features are set, use FIFO as the default.
-        pub(crate) type AxTask = scheduler::FifoTask<TaskInner>;
-        pub(crate) type Scheduler = scheduler::FifoScheduler<TaskInner>;
+        pub(crate) type AxTask = scheduler::FifoTask<TaskInner, MAX_TIME_SLICE>;
+        pub(crate) type Scheduler = scheduler::FifoScheduler<TaskInner, MAX_TIME_SLICE>;
     }
 }
 
@@ -66,6 +67,12 @@ pub fn init_scheduler() {
     info!("Initialize scheduling...");
 
     crate::run_queue::init();
+
+    #[cfg(feature = "preempt")]
+    debug!("=============preempt is enabled=========");
+
+    debug!("print preempt end ======================############");
+
     #[cfg(feature = "irq")]
     crate::timers::init();
 
