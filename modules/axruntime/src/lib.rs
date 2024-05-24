@@ -140,8 +140,8 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
     #[cfg(feature = "alloc")]
     init_allocator();
 
-    /// 实现dtb 信息
-    // show_dtb_info(dtb.into());
+    // 实现打印 dtb 信息
+    show_dtb_info(dtb.into());
 
     #[cfg(feature = "paging")]
     {
@@ -159,6 +159,8 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
     {
         #[allow(unused_variables)]
         let all_devices = axdriver::init_drivers();
+        // all_devices probe_bus_devices();
+    
 
         #[cfg(feature = "fs")]
         axfs::init_filesystems(all_devices.block);
@@ -191,7 +193,7 @@ pub extern "C" fn rust_main(cpu_id: usize, dtb: usize) -> ! {
     while !is_init_ok() {
         core::hint::spin_loop();
     }
-
+    // #[cfg(feature = "paging")]
     {
       let ga = axalloc::global_allocator();
       info!("Used pages {} / Used bytes {}", ga.used_pages(), ga.used_bytes());
@@ -307,6 +309,7 @@ extern crate alloc;
 // use alloc::string::String;
 use alloc::vec::Vec;
 // use axdtb::util::SliceRead;
+use fdt::{node::FdtNode, standard_nodes::Compatible, Fdt};
 // 设备树信息
 struct DtbInfo {
     memory_addr: usize,
@@ -315,6 +318,7 @@ struct DtbInfo {
 }
 
 /// 显示dtb 信息
+/// 作业要求 https://oslearning365.github.io/oscamp_unikernel/ch1-4.html
 fn show_dtb_info(dtb_pa: usize){
     // Parse fdt for early memory info
     let dtb_info = match parse_dtb(dtb_pa) {
@@ -332,13 +336,42 @@ fn show_dtb_info(dtb_pa: usize){
 }
 
 /// 解析设备树
-fn parse_dtb(dtb_pa: usize) -> Result<DtbInfo,&'static str> {
-    // extern crate fdt;
-    // use fdt::{node::FdtNode, standard_nodes::Compatible, Fdt};
+fn parse_dtb(dtb: usize) -> Result<DtbInfo,&'static str> {
     // 这里就是对axdtb组件的调用，传入dtb指针，解析后输出结果。这个函数和axdtb留给大家实现
-    info!("device tree @ {:#x}", dtb_pa);
-    //axdriver::
-    // let fdt = unsafe { Fdt::from_ptr(dtb as *const u8).unwrap() };
-    // walk_dt(fdt);
-    Err("parse_dtb not ready")
+    // info!("device tree @ {:#x}", dtb);
+    // Safe because the pointer is a valid pointer to unaliased memory.
+    let fdt = unsafe { Fdt::from_ptr(dtb as *const u8).unwrap() };
+    let memory_addr= fdt.memory().regions().next().unwrap().starting_address as usize;
+    let memory_size= fdt.memory().regions().next().unwrap().size.unwrap();
+    let mmio_regions=  walk_dt(fdt);
+    Ok(DtbInfo{
+        memory_addr,
+        memory_size ,
+        mmio_regions,
+    })
+}
+
+fn walk_dt(fdt: Fdt) ->Vec<(usize, usize)> {
+    let mut nodes=Vec::new();
+    for node in fdt.all_nodes() {
+        if let Some(compatible) = node.compatible() {
+            if compatible.all().any(|s| s == "virtio,mmio") {
+                if let Some(n)=virtio_probe(node){
+                   nodes.push(  n);
+               }
+            }
+        }
+    }
+    nodes
+}
+
+fn virtio_probe(node: FdtNode)->Option<(usize, usize)> {
+    if let Some(reg) = node.reg().and_then(|mut reg| reg.next()) {
+        let paddr = reg.starting_address as usize;
+        let size = reg.size.unwrap();
+        Some((paddr,size))
+    }else {
+        
+        None
+    }
 }
