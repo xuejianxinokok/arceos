@@ -3,6 +3,7 @@
 
 #[cfg(feature = "axstd")]
 use axstd::println;
+#[cfg(feature = "axstd")]
 use axstd::print;
 
 const PLASH_START: usize = 0x22000000;
@@ -20,8 +21,8 @@ fn main() {
 
     println!("Load payload ok!");
     */
-    let app1= parse_app(apps_start);
-    let _app2=parse_app(app1);
+    let app1= load_app(apps_start);
+    let _app2=load_app(app1);
     println!("Load payload ok!");
 }
 
@@ -40,7 +41,7 @@ fn bytes_to_u16(bytes: &[u8]) -> u16 {
 /// # 2字节魔数 ABCD
 /// # 2字节长度
 /// # 文件内容
-fn parse_app(start :* const u8)-> * const u8{
+fn load_app(start :* const u8)-> * const u8{
     println!("=============================");
     // 读取魔数 0xABCD
     let magic = unsafe { core::slice::from_raw_parts(start, 2) };
