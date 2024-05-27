@@ -71,6 +71,10 @@ members = [
     "apps/task/priority",
     "apps/task/tls",
 ]
+# 排除的项目
+exclude=[
+    "apps_other/hello_app"
+]
 
 [profile.release]
 lto = true
