@@ -13,6 +13,12 @@ unsafe fn init_boot_page_table() {
     BOOT_PT_SV39[2] = (0x80000 << 10) | 0xef;
     // 0xffff_ffc0_8000_0000..0xffff_ffc0_c000_0000, VRWX_GAD, 1G block
     BOOT_PT_SV39[0x102] = (0x80000 << 10) | 0xef;
+    
+    // ArceOS 目前没有对 pflash 所在的地址空间进行映射，增加映射
+    // qemu 有两个 pflash，其中第一个被保留做扩展的 bios，我们只能用第二个，它的开始地址 0x22000000。
+    // 下行是我们新增的映射，这样 ArceOS 就可以访问 pflash 所在的地址空间了
+    // 0x0000_0000..0x4000_0000, VRWX_GAD, 1G block
+    BOOT_PT_SV39[0] = (0x00000 << 10) | 0xef;
 }
 
 unsafe fn init_mmu() {

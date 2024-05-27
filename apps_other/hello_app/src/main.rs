@@ -7,6 +7,7 @@ use core::panic::PanicInfo;
 unsafe extern "C" fn _start() -> ! {
     core::arch::asm!(
         "wfi",
+        // "ebreak",
         options(noreturn)
     )
 }
