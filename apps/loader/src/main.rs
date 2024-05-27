@@ -34,7 +34,12 @@ fn bytes_to_u16(bytes: &[u8]) -> u16 {
     u16::from_be_bytes(bytes.try_into().unwrap())
 }
 
-/// 格式参考 payload/makebin.sh
+/// APP 生成格式参考 payload/makebin.sh
+/// # 文件格式
+/// # 字节序大端法
+/// # 2字节魔数 ABCD
+/// # 2字节长度
+/// # 文件内容
 fn parse_app(start :* const u8)-> * const u8{
     println!("=============================");
     // 读取魔数 0xABCD
