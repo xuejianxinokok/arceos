@@ -9,7 +9,8 @@ unsafe extern "C" fn _start() -> ! {
     // "wfi",
     // "ebreak",
     core::arch::asm!(
-        "ebreak",
+        "wfi
+         ret ",
         options(noreturn)
     )
 }
