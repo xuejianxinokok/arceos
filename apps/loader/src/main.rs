@@ -2,10 +2,19 @@
 #![cfg_attr(feature = "axstd", no_std)]
 #![cfg_attr(feature = "axstd", no_main)]
 
+
+#[macro_use]
 #[cfg(feature = "axstd")]
-use axstd::print;
-#[cfg(feature = "axstd")]
-use axstd::println;
+extern crate axstd as std;
+
+
+// #[cfg(feature = "axstd")]
+// use axstd::print;
+// #[cfg(feature = "axstd")]
+// use axstd::println;
+
+mod abi;
+use abi::{ABI_TABLE,abi_hello,abi_putchar,abi_terminate,register_abi,SYS_HELLO,SYS_PUTCHAR,SYS_TERMINATE};
 
 const PLASH_START: usize = 0x22000000;
 // app running aspace
@@ -24,20 +33,21 @@ fn main() {
     println!("Load payload ok!");
     */
 
+    register_abi(SYS_HELLO, abi_hello as usize);
+    register_abi(SYS_PUTCHAR, abi_putchar as usize);
+    register_abi(SYS_TERMINATE, abi_terminate as usize);
+
+
     // app 在文件中的偏移
     let mut offset = 0;
     let mut index = 0;
-    // let mut run_off_set=0;
     while let Some(app) = load_app(unsafe { apps_start.offset(offset) }) {
         // 应用长度=2字节魔数 +2字节长度+ 内容长度
         offset += app.len() as isize + 4;
-        //拷贝app 到目的地址
-        // println!("run_off_set:{}",run_off_set);
-        // copy_app(app,RUN_START+run_off_set);
         copy_app(app, RUN_START);
-        run_apps(index);
+        // run_apps(index);
+        run_apps_with_abi(index);
         index += 1;
-        // run_off_set+=app.len();
     }
     println!("Load payload ok!");
 }
@@ -81,7 +91,6 @@ fn load_app(start: *const u8) -> Option<&'static [u8]> {
         print!("{:02X} ", byte);
     }
     println!();
-    // unsafe{start.offset(4 +size as isize) }
     println!("load code {:?}; address [{:?}]", code, code.as_ptr());
     Some(code)
 }
@@ -108,4 +117,51 @@ fn run_apps(index: isize) {
             run_start = const RUN_START,
         )
     }
+
+    /* 
+    match index {
+        0=>unsafe {
+            core::arch::asm!("
+            li      t2, {run_start}
+            jalr    ra, t2,  0 
+            # j       .  
+            # ret      ",
+                run_start = const RUN_START,
+            )
+        },
+        1=>unsafe {
+            core::arch::asm!("
+            li      t2, {run_start}
+            jalr    t2
+            j       .",
+            run_start = const RUN_START,
+            )
+        },
+        _=>()
+    }
+    */
+}
+
+
+
+fn run_apps_with_abi(index: isize) {
+    println!("Execute app {} ...", index);
+    let arg0: u8 = b'A';
+    unsafe { core::arch::asm!("
+        li      t0, {abi_num}
+        slli    t0, t0, 3
+        la      t1, {abi_table}
+        add     t1, t1, t0
+        ld      t1, (t1)
+        jalr    t1
+        li      t2, {run_start}
+        jalr    t2
+        j       .",
+        run_start = const RUN_START,
+        abi_table = sym ABI_TABLE,
+        // abi_num = const SYS_HELLO,
+        // abi_num = const SYS_PUTCHAR,
+        abi_num= const SYS_TERMINATE,
+        in("a0") arg0,
+    )}
 }
