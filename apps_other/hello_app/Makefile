@@ -1,6 +1,15 @@
 DIR_payload=../../payload
 APP=hello_app
 
+
+# 编译并运行
+run: obj
+    # 调用脚本生成运行镜像
+	bash -c 'cd ${DIR_payload} && ./makebin.sh'
+    # 运行镜像
+	make  run   -C ../../  QEMU_LOG=y  MODE=debug
+
+
 bin: build
 	rust-objcopy --binary-architecture=riscv64 --strip-all -O binary target/riscv64gc-unknown-none-elf/release/${APP} ./${APP}.bin
     # if 输入文件名  of 输出文件名
@@ -21,6 +30,7 @@ obj: build
 	rust-objcopy --binary-architecture=riscv64 --strip-all -O binary target/riscv64gc-unknown-none-elf/release/${APP} ./${APP}.bin
 	cp ./${APP}.bin ${DIR_payload}
 
+# 查看内容
 dump:
 	xxd -ps ./${APP}.bin
 

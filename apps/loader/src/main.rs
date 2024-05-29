@@ -2,19 +2,15 @@
 #![cfg_attr(feature = "axstd", no_std)]
 #![cfg_attr(feature = "axstd", no_main)]
 
-
 #[macro_use]
 #[cfg(feature = "axstd")]
 extern crate axstd as std;
 
-
-// #[cfg(feature = "axstd")]
-// use axstd::print;
-// #[cfg(feature = "axstd")]
-// use axstd::println;
-
 mod abi;
-use abi::{ABI_TABLE,abi_hello,abi_putchar,abi_terminate,register_abi,SYS_HELLO,SYS_PUTCHAR,SYS_TERMINATE};
+use abi::{
+    abi_hello, abi_putchar, abi_terminate, register_abi, ABI_TABLE, SYS_HELLO, SYS_PUTCHAR,
+    SYS_TERMINATE,
+};
 
 const PLASH_START: usize = 0x22000000;
 // app running aspace
@@ -25,18 +21,11 @@ const RUN_START: usize = 0xffff_ffc0_8010_0000;
 #[cfg_attr(feature = "axstd", no_mangle)]
 fn main() {
     let apps_start = PLASH_START as *const u8;
-    /*
-    let apps_size = 32; // Dangerous!!! We need to get accurate size of apps.
-    println!("Load payload ...");
-    let code = unsafe { core::slice::from_raw_parts(apps_start, apps_size) };
-    println!("content: {:#x}", bytes_to_usize(&code[..8]));
-    println!("Load payload ok!");
-    */
 
+    // 注册abi
     register_abi(SYS_HELLO, abi_hello as usize);
     register_abi(SYS_PUTCHAR, abi_putchar as usize);
     register_abi(SYS_TERMINATE, abi_terminate as usize);
-
 
     // app 在文件中的偏移
     let mut offset = 0;
@@ -46,7 +35,9 @@ fn main() {
         offset += app.len() as isize + 4;
         copy_app(app, RUN_START);
         // run_apps(index);
-        run_apps_with_abi(index);
+        // run_apps_with_abi(index);
+        run_apps_with_abi_table(index);
+    
         index += 1;
     }
     println!("Load payload ok!");
@@ -68,7 +59,7 @@ fn bytes_to_u16(bytes: &[u8]) -> u16 {
 /// # 2字节长度
 /// # 文件内容
 fn load_app(start: *const u8) -> Option<&'static [u8]> {
-    println!("=============================");
+    println!("[=============LOAD_APP================]");
     //1. 读取魔数 0xABCD
     let magic_bin = unsafe { core::slice::from_raw_parts(start, 2) };
     let magic = bytes_to_u16(&magic_bin[..2]);
@@ -106,6 +97,7 @@ fn copy_app(app_bytes: &[u8], to_addr: usize) {
     );
 }
 
+// 实验2：把应用拷贝到执行区域并执行
 fn run_apps(index: isize) {
     println!("Execute app {} ...", index);
     unsafe {
@@ -118,13 +110,13 @@ fn run_apps(index: isize) {
         )
     }
 
-    /* 
+    /*
     match index {
         0=>unsafe {
             core::arch::asm!("
             li      t2, {run_start}
-            jalr    ra, t2,  0 
-            # j       .  
+            jalr    ra, t2,  0
+            # j       .
             # ret      ",
                 run_start = const RUN_START,
             )
@@ -142,12 +134,12 @@ fn run_apps(index: isize) {
     */
 }
 
-
-
+//实验3：通过 ABI 调用 ArceOS 功能
 fn run_apps_with_abi(index: isize) {
     println!("Execute app {} ...", index);
     let arg0: u8 = b'A';
-    unsafe { core::arch::asm!("
+    unsafe {
+        core::arch::asm!("
         li      t0, {abi_num}
         slli    t0, t0, 3
         la      t1, {abi_table}
@@ -157,11 +149,28 @@ fn run_apps_with_abi(index: isize) {
         li      t2, {run_start}
         jalr    t2
         j       .",
-        run_start = const RUN_START,
-        abi_table = sym ABI_TABLE,
-        // abi_num = const SYS_HELLO,
-        // abi_num = const SYS_PUTCHAR,
-        abi_num= const SYS_TERMINATE,
-        in("a0") arg0,
-    )}
+            run_start = const RUN_START,
+            abi_table = sym ABI_TABLE,
+            // abi_num = const SYS_HELLO,
+            // abi_num = const SYS_PUTCHAR,
+            abi_num= const SYS_TERMINATE,
+            in("a0") arg0,
+        )
+    }
+}
+
+// 实验4：正式在 App 中调用 ABI
+// 传入abi table 并 运行apps
+fn run_apps_with_abi_table(index: isize) {
+    println!("Execute app {} ...", index);
+    unsafe {
+        core::arch::asm!("
+        la      a7, {abi_table} # abi_table开始地址用a7传递
+        li      t2, {run_start} # 加载ABI_TABLE 到t2
+        jalr    t2              # 跳转到t2中值所指定的位置,返回地址保存在 x1(ra) 
+        ",
+            run_start = const RUN_START,
+            abi_table = sym ABI_TABLE,
+        )
+    }
 }

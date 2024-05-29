@@ -1,9 +1,3 @@
-// #[cfg(feature = "axstd")]
-// use axstd::{println,process::exit};
-
-
-
-
 use std::process::exit;
 
 
@@ -14,7 +8,9 @@ pub const SYS_TERMINATE: usize = 3;
 pub static mut ABI_TABLE: [usize; 16] = [0; 16];
 
 pub fn register_abi(num: usize, handle: usize) {
-    unsafe { ABI_TABLE[num] = handle; }
+    unsafe {
+        ABI_TABLE[num] = handle;
+    }
 }
 
 pub fn abi_hello() {
@@ -22,10 +18,11 @@ pub fn abi_hello() {
 }
 
 pub fn abi_putchar(c: char) {
-    println!("[ABI:Print] {c}");
+    // println!("[ABI:Print] {c}");
+    print!("{}", c);
 }
 
 pub fn abi_terminate(code: i32) {
     println!("[ABI:Terminate]!");
-     exit(code);
+    exit(code);
 }
