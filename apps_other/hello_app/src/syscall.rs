@@ -54,67 +54,29 @@ pub fn hello() {
 
 pub fn putchar(c: char)->() {
     // syscall(SYS_PUTCHAR, [0, c as usize , 0]);
-    
     unsafe {
-
         core::arch::asm!("
         
-        # addi sp, sp, -16
-	    # sw t0, 0(sp)
-	    # sw t1, 4(sp)
-	    # sw a7, 8(sp)
-	    # sw ra, 12(sp)
-
-        # 保存被调用者保存寄存器的状态
-        #addi    sp, sp, -104    # 分配空间保存所有必要的寄存器，包括sp
-        #sw      ra, 96(sp)      # 保存返回地址到栈上
-        #sw      s0, 88(sp)      # 保存s0到栈上
-        #sw      s1, 80(sp)      # 保存s1到栈上
-        #sw      s2, 72(sp)      # 保存s2到栈上
-        #sw      s3, 64(sp)      # 保存s3到栈上
-        #sw      s4, 56(sp)      # 保存s4到栈上
-        #sw      s5, 48(sp)      # 保存s5到栈上
-        #sw      s6, 40(sp)      # 保存s6到栈上
-        #sw      s7, 32(sp)      # 保存s7到栈上
-        #sw      s8, 24(sp)      # 保存s8到栈上
-        #sw      s9, 16(sp)      # 保存s9到栈上
-        #sw      s10, 8(sp)      # 保存s10到栈上
-        ## 保存sp寄存器
-        #sw      sp, 0(sp)       # 保存sp到栈上
-
+        addi sp, sp, -16
+	    sw t0, 0(sp)
+	    sw t1, 4(sp)
+	    sw a7, 8(sp)
+	    sw ra, 12(sp)
+         # 保存当前栈指针
+        addi    s0, sp, 16     # 将当前栈指针保存到s0寄存器中
 
         li      t0, {abi_num}
         slli    t0, t0, 3
         add     t1, a7, t0
         ld      t1, (t1)
         jalr    t1
-
-
-        
-
-        # lw t0, 0(sp)
-	    # lw t1, 4(sp)
-	    # lw a7, 8(sp)
-	    # lw ra, 12(sp)
-	    # addi sp, sp, 16
-
-
-        # 恢复函数上下文
-        #lw      sp, 0(sp)       # 恢复sp寄存器
-        #lw      ra, 96(sp)      # 恢复返回地址
-        #lw      s0, 88(sp)      # 恢复s0
-        #lw      s1, 80(sp)      # 恢复s1
-        #lw      s2, 72(sp)      # 恢复s2
-        #lw      s3, 64(sp)      # 恢复s3
-        #lw      s4, 56(sp)      # 恢复s4
-        #lw      s5, 48(sp)      # 恢复s5
-        #lw      s6, 40(sp)      # 恢复s6
-        #lw      s7, 32(sp)      # 恢复s7
-        #lw      s8, 24(sp)      # 恢复s8
-        #lw      s9, 16(sp)      # 恢复s9
-        #lw      s10, 8(sp)      # 恢复s10
-        #addi    sp, sp, 104     # 恢复栈指针
-
+         # 恢复当前栈指针
+        addi    sp, s0, 0       # 将保存在s0中的栈指针恢复到sp寄存器
+        lw t0, 0(sp)
+	    lw t1, 4(sp)
+	    lw a7, 8(sp)
+	    lw ra, 12(sp)
+	    addi sp, sp, 16
         ",
             abi_num = const SYS_PUTCHAR,
             in("a0") c as usize,
