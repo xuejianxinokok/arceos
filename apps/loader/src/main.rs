@@ -6,10 +6,11 @@
 #[cfg(feature = "axstd")]
 extern crate axstd as std;
 
+
+
 mod abi;
 use abi::{
-    abi_hello, abi_putchar, abi_terminate, register_abi, ABI_TABLE, SYS_HELLO, SYS_PUTCHAR,
-    SYS_TERMINATE,
+    register_all_abi, ABI_TABLE,SYS_TERMINATE
 };
 
 const PLASH_START: usize = 0x22000000;
@@ -22,10 +23,8 @@ const RUN_START: usize = 0xffff_ffc0_8010_0000;
 fn main() {
     let apps_start = PLASH_START as *const u8;
 
-    // 注册abi
-    register_abi(SYS_HELLO, abi_hello as usize);
-    register_abi(SYS_PUTCHAR, abi_putchar as usize);
-    register_abi(SYS_TERMINATE, abi_terminate as usize);
+    // 注册所有abi
+    register_all_abi();
 
     // app 在文件中的偏移
     let mut offset = 0;
@@ -161,16 +160,26 @@ fn run_apps_with_abi(index: isize) {
 
 // 实验4：正式在 App 中调用 ABI
 // 传入abi table 并 运行apps
-fn run_apps_with_abi_table(index: isize) {
+fn run_apps_with_abi_table(index: isize)->() {
     println!("Execute app {} ...", index);
     unsafe {
+        
         core::arch::asm!("
         la      a7, {abi_table} # abi_table开始地址用a7传递
         li      t2, {run_start} # 加载ABI_TABLE 到t2
-        jalr    t2              # 跳转到t2中值所指定的位置,返回地址保存在 x1(ra) 
+        jalr    t2              # 跳转到t2中值所指定的位置,返回地址保存在 x1(ra)
         ",
-            run_start = const RUN_START,
-            abi_table = sym ABI_TABLE,
-        )
-    }
+          run_start = const RUN_START,
+          abi_table = sym ABI_TABLE,
+        );
+        
+        
+        // core::arch::asm!(
+        //     " wfi
+        //       wfi
+        //     ",
+        //      // options(noreturn)
+        // );
+    };
+    ()
 }
