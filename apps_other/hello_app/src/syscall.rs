@@ -87,7 +87,7 @@ pub fn putchar(c: char)->() {
         slli    t0, t0, 3
         add     t1, a7, t0
         ld      t1, (t1)
-        jar    t1
+        jalr    t1
 
 
         
