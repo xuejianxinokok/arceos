@@ -42,9 +42,14 @@ unsafe extern "C" fn _start(){
     // );
 
 
-   
-    syscall::putchar('A');
-    syscall::putchar('A');
+    // 这里连续2次调用 会有问题
+    //你就是说你第一次程序运行都出问题了
+    // 第一没有问题
+    //第一次能打印A
+    //我懂了，你现在只运行了一个hello_app对吧
+    // 嗯
+    syscall::putchar('A'); //A=>0X41
+    syscall::putchar('B'); //A=>0X42
 
     // core::arch::asm!(
     //     " nop

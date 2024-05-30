@@ -160,8 +160,10 @@ fn run_apps_with_abi(index: isize) {
 
 // 实验4：正式在 App 中调用 ABI
 // 传入abi table 并 运行apps
-fn run_apps_with_abi_table(index: isize)->() {
-    println!("Execute app {} ...", index);
+//这里是运行外面的程序的对吗？嗯
+//这里要保存上下文，这里还没有保存
+fn run_apps_with_abi_table(index: isize) ->() {
+    // println!("Execute app {} ...", index);
     unsafe {
         
         core::arch::asm!("
@@ -171,6 +173,8 @@ fn run_apps_with_abi_table(index: isize)->() {
         ",
           run_start = const RUN_START,
           abi_table = sym ABI_TABLE,
+        //   clobber_abi("C"),
+        //   options(noreturn),
         );
         
         
