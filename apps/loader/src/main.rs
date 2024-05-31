@@ -22,6 +22,12 @@ const PLASH_START: usize = 0x22000000;
 // 注意：这个 0x4010_0000 所在的 1G 空间在原始的内核地址空间中是不存在的。
 const RUN_START: usize = 0x4010_0000;
 
+/*
+外部的app 项目 在  apps/other/hello_app/src/main.rs
+
+*/
+
+
 #[cfg_attr(feature = "axstd", no_mangle)]
 fn main() {
     let apps_start = PLASH_START as *const u8;
@@ -33,18 +39,20 @@ fn main() {
     let mut offset = 0;
     let mut app_id = 1;
     while let Some(app) = load_app(unsafe { apps_start.offset(offset) }) {
-
-        // switch aspace from kernel to app
+        // 初始化页表
         unsafe { init_app_page_table(app_id); }
+        // 切换空间  switch aspace from kernel to app
         unsafe { switch_app_aspace(app_id); }
 
         // 应用长度=2字节魔数 +2字节长度+ 内容长度
         offset += app.len() as isize + 4;
+        // 拷贝app 到地址空间
         copy_app(app, RUN_START);
         // run_apps(app_id);
         // run_apps_with_abi(app_id);
         // run_apps_with_abi_table(app_id);
 
+        // 运行app
         run_apps_with_abi_table_lab5(app_id);
     
         app_id += 1;
@@ -236,9 +244,10 @@ fn run_apps_with_abi_table_lab5(index: u16) ->() {
 // App aspace
 //
 // 在 modules/axhal/linker.lds.S 中配置
+// APP1的页表
 #[link_section = ".data.app1_page_table"]
 static mut APP1_PT_SV39: [u64; 512] = [0; 512];
-
+// APP2的页表
 #[link_section = ".data.ap2_page_table"]
 static mut APP2_PT_SV39: [u64; 512] = [0; 512];
 
@@ -262,19 +271,9 @@ unsafe fn init_app_page_table(app_id :u16) {
             APP1_PT_SV39[1] = (0x80000 << 10) | 0xef;
         },
         2=>{
-           // 0x8000_0000..0xc000_0000, VRWX_GAD, 1G block
            APP2_PT_SV39[2] = (0x80000 << 10) | 0xef;
-           // 0xffff_ffc0_8000_0000..0xffff_ffc0_c000_0000, VRWX_GAD, 1G block
            APP2_PT_SV39[0x102] = (0x80000 << 10) | 0xef;
-       
-           // ArceOS 目前没有对 pflash 所在的地址空间进行映射，增加映射
-           // qemu 有两个 pflash，其中第一个被保留做扩展的 bios，我们只能用第二个，它的开始地址 0x22000000。
-           // 下行是我们新增的映射，这样 ArceOS 就可以访问 pflash 所在的地址空间了
-           // 0x0000_0000..0x4000_0000, VRWX_GAD, 1G block
            APP2_PT_SV39[0] = (0x00000 << 10) | 0xef;
-       
-           // For App aspace!
-           // 0x4000_0000..0x8000_0000, VRWX_GAD, 1G block
            APP2_PT_SV39[1] = (0x80000 << 10) | 0xef;
         },
         _=> ()
