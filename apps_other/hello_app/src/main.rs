@@ -10,6 +10,7 @@ unsafe extern "C" fn _start() {
     const SYS_PUTCHAR: usize = 2;
     const SYS_TERMINATE: usize = 3;
 
+    // test
     // syscall::putchar('L');
     // syscall::putchar('A');
     // syscall::putchar('B');
@@ -27,10 +28,12 @@ unsafe extern "C" fn _start() {
     // syscall::putchar('!');
     // syscall::putchar('\n');
 
+    // lab4
     // syscall::hello();
     // syscall::puts("LAB4 PUTS TEST! \n");
     // syscall::exit(0);
 
+    // lab5
     // LAB5 APP1
     // syscall::putchar('C');
     // LAB5 APP2

@@ -25,37 +25,39 @@ const RUN_START: usize = 0x4010_0000;
 
 构建应用的脚本 在 payload/makebin.sh
 
+
 */
 
 #[cfg_attr(feature = "axstd", no_mangle)]
 fn main() {
     let apps_start = PLASH_START as *const u8;
 
-    // 注册所有abi
+    //1. 注册所有abi
     register_all_abi();
 
     // app 在文件中的偏移
     let mut offset = 0;
     let mut app_id = 1;
     while let Some(app) = load_app(unsafe { apps_start.offset(offset) }) {
-        // 初始化页表
+        //2. 初始化页表
         unsafe {
             init_app_page_table(app_id);
         }
-        // 切换空间  switch aspace from kernel to app
+        //3. 切换空间  switch aspace from kernel to app
         unsafe {
             switch_app_aspace(app_id);
         }
 
         // 应用长度=2字节魔数 +2字节长度+ 内容长度
         offset += app.len() as isize + 4;
-        // 拷贝app 到地址空间
+        //4.加载应用  拷贝app 到地址空间
         copy_app(app, RUN_START);
+
         // run_apps(app_id);
         // run_apps_with_abi(app_id);
         // run_apps_with_abi_table(app_id); // lab4运行app
 
-        // lab5运行app
+        //5. lab5运行app
         run_apps_with_abi_table_lab5(app_id);
 
         app_id += 1;
