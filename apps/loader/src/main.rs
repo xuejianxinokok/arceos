@@ -6,12 +6,8 @@
 #[cfg(feature = "axstd")]
 extern crate axstd as std;
 
-
-
 mod abi;
-use abi::{
-    register_all_abi, ABI_TABLE,SYS_TERMINATE
-};
+use abi::{register_all_abi, ABI_TABLE, SYS_TERMINATE};
 
 const PLASH_START: usize = 0x22000000;
 // app running aspace
@@ -23,10 +19,13 @@ const PLASH_START: usize = 0x22000000;
 const RUN_START: usize = 0x4010_0000;
 
 /*
+
+
 外部的app 项目 在  apps/other/hello_app/src/main.rs
 
-*/
+构建应用的脚本 在 payload/makebin.sh
 
+*/
 
 #[cfg_attr(feature = "axstd", no_mangle)]
 fn main() {
@@ -40,9 +39,13 @@ fn main() {
     let mut app_id = 1;
     while let Some(app) = load_app(unsafe { apps_start.offset(offset) }) {
         // 初始化页表
-        unsafe { init_app_page_table(app_id); }
+        unsafe {
+            init_app_page_table(app_id);
+        }
         // 切换空间  switch aspace from kernel to app
-        unsafe { switch_app_aspace(app_id); }
+        unsafe {
+            switch_app_aspace(app_id);
+        }
 
         // 应用长度=2字节魔数 +2字节长度+ 内容长度
         offset += app.len() as isize + 4;
@@ -50,11 +53,11 @@ fn main() {
         copy_app(app, RUN_START);
         // run_apps(app_id);
         // run_apps_with_abi(app_id);
-        // run_apps_with_abi_table(app_id);
+        // run_apps_with_abi_table(app_id); // lab4运行app
 
-        // 运行app
+        // lab5运行app
         run_apps_with_abi_table_lab5(app_id);
-    
+
         app_id += 1;
     }
     println!("Load payload ok!");
@@ -115,6 +118,7 @@ fn copy_app(app_bytes: &[u8], to_addr: usize) {
     // );
 }
 
+/* 
 // 实验2：把应用拷贝到执行区域并执行
 fn run_apps(index: u16) {
     println!("Execute app {} ...", index);
@@ -157,10 +161,9 @@ fn run_apps_with_abi(index: u16) {
 // 实验4：正式在 App 中调用 ABI
 // 传入abi table 并 运行apps
 
-fn run_apps_with_abi_table(index: u16) ->() {
+fn run_apps_with_abi_table(index: u16) -> () {
     // println!("Execute app {} ...", index);
     unsafe {
-        
         core::arch::asm!("
         la      a7, {abi_table} # abi_table开始地址用a7传递
         li      t2, {run_start} # 加载ABI_TABLE 到t2
@@ -180,9 +183,8 @@ fn run_apps_with_abi_table(index: u16) ->() {
     };
     ()
 }
-
-
-fn run_apps_with_abi_table_lab5(index: u16) ->() {
+*/
+fn run_apps_with_abi_table_lab5(index: u16) -> () {
     // println!("Execute app {} ...", index);
     unsafe {
         core::arch::asm!("
@@ -239,7 +241,6 @@ fn run_apps_with_abi_table_lab5(index: u16) ->() {
     ()
 }
 
-
 //
 // App aspace
 //
@@ -252,48 +253,43 @@ static mut APP1_PT_SV39: [u64; 512] = [0; 512];
 static mut APP2_PT_SV39: [u64; 512] = [0; 512];
 
 /// 初始化应用的页表
-unsafe fn init_app_page_table(app_id :u16) {
+unsafe fn init_app_page_table(app_id: u16) {
     match app_id {
-        1=> {
+        1 => {
             // 0x8000_0000..0xc000_0000, VRWX_GAD, 1G block
             APP1_PT_SV39[2] = (0x80000 << 10) | 0xef;
             // 0xffff_ffc0_8000_0000..0xffff_ffc0_c000_0000, VRWX_GAD, 1G block
             APP1_PT_SV39[0x102] = (0x80000 << 10) | 0xef;
-        
+
             // ArceOS 目前没有对 pflash 所在的地址空间进行映射，增加映射
             // qemu 有两个 pflash，其中第一个被保留做扩展的 bios，我们只能用第二个，它的开始地址 0x22000000。
             // 下行是我们新增的映射，这样 ArceOS 就可以访问 pflash 所在的地址空间了
             // 0x0000_0000..0x4000_0000, VRWX_GAD, 1G block
             APP1_PT_SV39[0] = (0x00000 << 10) | 0xef;
-        
+
             // For App aspace!
             // 0x4000_0000..0x8000_0000, VRWX_GAD, 1G block
             APP1_PT_SV39[1] = (0x80000 << 10) | 0xef;
-        },
-        2=>{
-           APP2_PT_SV39[2] = (0x80000 << 10) | 0xef;
-           APP2_PT_SV39[0x102] = (0x80000 << 10) | 0xef;
-           APP2_PT_SV39[0] = (0x00000 << 10) | 0xef;
-           APP2_PT_SV39[1] = (0x80000 << 10) | 0xef;
-        },
-        _=> ()
+        }
+        2 => {
+            APP2_PT_SV39[2] = (0x80000 << 10) | 0xef;
+            APP2_PT_SV39[0x102] = (0x80000 << 10) | 0xef;
+            APP2_PT_SV39[0] = (0x00000 << 10) | 0xef;
+            APP2_PT_SV39[1] = (0x80000 << 10) | 0xef;
+        }
+        _ => (),
     }
-
-    
-    
 }
 
-
 /// 切换应用空间
-unsafe fn switch_app_aspace(app_id :u16) {
+unsafe fn switch_app_aspace(app_id: u16) {
     use riscv::register::satp;
-    
+
     let page_table_root = match app_id {
-        1=> APP1_PT_SV39.as_ptr() as usize - axconfig::PHYS_VIRT_OFFSET,
-        2=> APP2_PT_SV39.as_ptr() as usize - axconfig::PHYS_VIRT_OFFSET,
-        _=> 0
-    }; 
+        1 => APP1_PT_SV39.as_ptr() as usize - axconfig::PHYS_VIRT_OFFSET,
+        2 => APP2_PT_SV39.as_ptr() as usize - axconfig::PHYS_VIRT_OFFSET,
+        _ => 0,
+    };
     satp::set(satp::Mode::Sv39, 0, page_table_root >> 12);
     riscv::asm::sfence_vma_all();
 }
-

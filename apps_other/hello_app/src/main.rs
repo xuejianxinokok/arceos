@@ -4,18 +4,12 @@
 
 mod syscall;
 
-
-
 #[no_mangle]
-unsafe extern "C" fn _start(){
-
+unsafe extern "C" fn _start() {
     const SYS_HELLO: usize = 1;
     const SYS_PUTCHAR: usize = 2;
     const SYS_TERMINATE: usize = 3;
-    
 
-
-    
     // syscall::putchar('L');
     // syscall::putchar('A');
     // syscall::putchar('B');
@@ -36,21 +30,15 @@ unsafe extern "C" fn _start(){
     // syscall::hello();
     // syscall::puts("LAB4 PUTS TEST! \n");
     // syscall::exit(0);
-    
+
     // LAB5 APP1
-    // syscall::putchar('C'); 
-    // LAB3 APP2
+    // syscall::putchar('C');
+    // LAB5 APP2
     syscall::putchar('D');
-
 }
-
-
 
 use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
-
-
-

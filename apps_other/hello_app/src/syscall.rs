@@ -7,7 +7,7 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
     unsafe {
         // ld      t0, {abi_num}
         core::arch::asm!(
-           "slli    t0, t0, 3      # 左移3位,t0*8,形成ABI_OFFSET 
+           "slli    t0, t0, 3      # 左移3位,t0*8,形成ABI_OFFSET
             add     t1, a7, t0     # ABI_ADDR=ABI_TABLE + ABI_OFFSET
             ld      t1, (t1)       # t1=ABI_ADDR
             jalr    t1             # 跳转到t1 所指定的位置,返回地址保存在 x1(ra)
@@ -24,9 +24,9 @@ fn syscall(id: usize, args: [usize; 3]) -> isize {
 
 pub fn hello() {
     // syscall(SYS_HELLO, [0, 0, 0]);
-    
+
     unsafe {
-        core::arch::asm!(" 
+        core::arch::asm!("
         addi sp, sp, -16*8
         sd ra, 120(sp)
         sd t0, 112(sp)
@@ -76,12 +76,11 @@ pub fn hello() {
             // options(noreturn),
         );
     };
-}   
-    
+}
 
-pub fn putchar(c: char)->isize {
+pub fn putchar(c: char) -> isize {
     // syscall(SYS_PUTCHAR, [0, c as usize , 0]);
-    let mut ret:isize=0;
+    let mut ret: isize = 0;
 
     unsafe {
         core::arch::asm!("
@@ -155,26 +154,25 @@ pub fn putchar(c: char)->isize {
         //     ",
         //      // options(noreturn)
         //  );
-        
     };
 
     ret
 }
-
-
 
 pub fn puts(str: &str) {
     // for c in str.as_bytes() {
     //     putchar(*c as char);
     // }
 
-    str.as_bytes().into_iter().for_each (|c| {putchar(*c as char);});
+    str.as_bytes().into_iter().for_each(|c| {
+        putchar(*c as char);
+    });
 }
 
 pub fn exit(xstate: isize) -> isize {
     //syscall(SYS_TERMINATE, [xstate as usize, 0, 0]);
     //xstate
-    
+
     unsafe {
         core::arch::asm!("
         addi sp, sp, -16*8
@@ -225,5 +223,4 @@ pub fn exit(xstate: isize) -> isize {
             options(noreturn),
         )
     }
-    
 }
