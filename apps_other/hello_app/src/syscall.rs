@@ -163,12 +163,12 @@ pub fn putchar(c: char)->isize {
 
 
 
+pub fn puts(str: &str) {
+    // for c in str.as_bytes() {
+    //     putchar(*c as char);
+    // }
 
-pub fn puts(s: &str) {
-    for c in s.as_bytes() {
-        putchar(*c as char);
-    }
-    
+    str.as_bytes().into_iter().for_each (|c| {putchar(*c as char);});
 }
 
 pub fn exit(xstate: isize) -> isize {

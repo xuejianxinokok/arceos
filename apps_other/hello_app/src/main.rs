@@ -16,16 +16,26 @@ unsafe extern "C" fn _start(){
 
 
     syscall::hello();
-    // core::arch::asm!(
-    //     " wfi
-    //       nop
-    //     ",
-    //      // options(noreturn)
-    // );
+    
+    // syscall::putchar('L');
     // syscall::putchar('A');
     // syscall::putchar('B');
+    // syscall::putchar('4');
+    // syscall::putchar(' ');
+    // syscall::putchar('P');
+    // syscall::putchar('U');
+    // syscall::putchar('T');
+    // syscall::putchar('S');
+    // syscall::putchar(' ');
+    // syscall::putchar('T');
+    // syscall::putchar('E');
+    // syscall::putchar('S');
+    // syscall::putchar('T');
+    // syscall::putchar('!');
+    // syscall::putchar('\n');
 
-    // syscall::puts("lab4 puts test!\n");
+    // 不知道为为什么这个循环不行
+    // syscall::puts("LAB4 PUTS TEST! \n");
     syscall::exit(0);
     
 
