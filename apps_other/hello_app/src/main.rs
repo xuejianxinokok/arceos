@@ -34,7 +34,6 @@ unsafe extern "C" fn _start(){
     // syscall::putchar('!');
     // syscall::putchar('\n');
 
-    // 不知道为为什么这个循环不行
     syscall::puts("LAB4 PUTS TEST! \n");
     syscall::exit(0);
     
