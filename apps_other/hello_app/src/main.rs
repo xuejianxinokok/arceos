@@ -15,7 +15,6 @@ unsafe extern "C" fn _start(){
     
 
 
-    syscall::hello();
     
     // syscall::putchar('L');
     // syscall::putchar('A');
@@ -34,9 +33,14 @@ unsafe extern "C" fn _start(){
     // syscall::putchar('!');
     // syscall::putchar('\n');
 
-    syscall::puts("LAB4 PUTS TEST! \n");
-    syscall::exit(0);
+    // syscall::hello();
+    // syscall::puts("LAB4 PUTS TEST! \n");
+    // syscall::exit(0);
     
+    // LAB5 APP1
+    // syscall::putchar('C'); 
+    // LAB3 APP2
+    syscall::putchar('D');
 
 }
 
@@ -47,3 +51,6 @@ use core::panic::PanicInfo;
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
+
+
+
