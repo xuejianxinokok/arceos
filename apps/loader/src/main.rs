@@ -76,12 +76,12 @@ fn load_app(start: *const u8) -> Option<&'static [u8]> {
     //3. 读取app 内容
     let code = unsafe { core::slice::from_raw_parts(start.offset(4), size) };
     // 十六进制表示
-    println!("app_content:");
-    for &byte in code {
-        print!("{:02X} ", byte);
-    }
+    // println!("app_content:");
+    // for &byte in code {
+    //     print!("{:02X} ", byte);
+    // }
     println!();
-    println!("load code {:?}; address [{:?}]", code, code.as_ptr());
+    // println!("load code {:?}; address [{:?}]", code, code.as_ptr());
     Some(code)
 }
 
@@ -89,11 +89,11 @@ fn load_app(start: *const u8) -> Option<&'static [u8]> {
 fn copy_app(app_bytes: &[u8], to_addr: usize) {
     let run_code = unsafe { core::slice::from_raw_parts_mut(to_addr as *mut u8, app_bytes.len()) };
     run_code.copy_from_slice(app_bytes);
-    println!(
-        "run  code {:?}; address [{:?}]",
-        run_code,
-        run_code.as_ptr()
-    );
+    // println!(
+    //     "run  code {:?}; address [{:?}]",
+    //     run_code,
+    //     run_code.as_ptr()
+    // );
 }
 
 // 实验2：把应用拷贝到执行区域并执行

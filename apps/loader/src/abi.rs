@@ -22,13 +22,13 @@ pub fn register_all_abi() {
 
 
 pub fn abi_hello() {
-    stdout().write_all(b"[ABI:Hello] Hello, Apps!");
+    stdout().write_all(b"[ABI:Hello] Hello, Apps!\n");
     // println!("[ABI:Hello] Hello, Apps!");
 }
 
 pub fn abi_putchar(c: char) {
     // print!("{}", c);
-    // UTF-8 编码最多需要4个字节
+    // // UTF-8 编码最多需要4个字节
     let mut bytes = [0; 4]; 
     let encoded_len = c.encode_utf8(&mut bytes).len();
     let slice: &[u8] = &bytes[..encoded_len];
@@ -36,6 +36,7 @@ pub fn abi_putchar(c: char) {
 }
 
 pub fn abi_terminate(code: i32) {
-    stdout().write_all(b"[ABI:Terminate]!");
+    stdout().write_all(b"[ABI:Terminate]!\n");
+    // println!("[ABI:Terminate]!");
     exit(code);
 }
