@@ -6,6 +6,6 @@
 actual.out
 qemu.log
 rusty-tags.vi
-/payload
+/payload/*.bin
 /apps_other/*/target
 /apps_other/*/*.bin
