@@ -1,6 +1,6 @@
 # docker rmi -f arceos
 # docker build -t arceos .
-# docker run --name os2 --hostname os2  -v D:/work20220906/gitee/rusttest/:/root/work -w /root/work  -d arceos  sleep infinity 
+# docker run --name os2 --hostname os2  --privileged=true -v D:/work20220906/gitee/rusttest/:/root/work -w /root/work  -d arceos  sleep infinity 
 # docker exec -it os2 /bin/bash
 # docker rm -f os2
 # 6.74GB 
@@ -22,7 +22,8 @@ RUN apt-get update && \
         zlib1g-dev libexpat-dev  \
         ninja-build pkg-config libglib2.0-dev libpixman-1-dev libsdl2-dev \
         libslirp-dev libclang-dev \
-        python3-distutils gdb-multiarch tmux
+        python3-distutils gdb-multiarch tmux \
+        opensbi u-boot-qemu sshpass openssh-client jq  qemu-system-misc dosfstools  gcc-riscv64-linux-gnu sudo 
 
 
 # 1. Set up QEMU RISC-V
@@ -59,7 +60,7 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 
 RUN ./configure --target-list=aarch64-softmmu,aarch64-linux-user,riscv64-softmmu,riscv64-linux-user,x86_64-softmmu,x86_64-linux-user --enable-slirp && \
     make -j$(nproc) && \
-    make install && \
+    make install 
 #    apt-get clean && \
 #    rm -rf /var/lib/apt/lists/*
 

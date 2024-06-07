@@ -36,8 +36,8 @@ V ?=
 
 # App options
 # 默认应用
-#A ?= apps/helloworld
-A ?= apps/loader
+A ?= apps/helloworld
+#A ?= apps/loader
 APP ?= $(A)
 FEATURES ?=
 APP_FEATURES ?=
